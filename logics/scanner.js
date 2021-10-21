@@ -1,6 +1,8 @@
 const Discord = require("Discord.js");
 const embeds = require("../embeds/embeds.js");
 const Canvas = require("canvas");
+const db = require("../database/db.js");
+const fs = require("fs");
 
 const vision = require('@google-cloud/vision');
 const visionClient = new vision.ImageAnnotatorClient({
@@ -19,21 +21,29 @@ module.exports = async (client, message) =>{
     const cropCanvas = Canvas.createCanvas(img.width*0.3, img.height);
     const ctx = cropCanvas.getContext('2d');
     ctx.drawImage(await Canvas.loadImage(img.url), img.width*0.7, 0, cropCanvas.width, cropCanvas.height, 0, 0, cropCanvas.width, cropCanvas.height);
-    
+
+    ctx.clearRect(cropCanvas.width*0.72, cropCanvas.height*0.167, cropCanvas.width*0.097, cropCanvas.height*0.786);
+
     const croppedImg = cropCanvas.toBuffer();
 
     message.reply({files: [croppedImg]})
     
-    const [result] = await visionClient.textDetection(croppedImg);
+    const [result] = await visionClient.documentTextDetection(croppedImg);
     const data = result.fullTextAnnotation.pages[0];
-    
+
+    fs.writeFile('results.json', JSON.stringify(data), err => {
+        if (err) {
+          console.error(err)
+          return
+        };
+    });
+
     //get username
     let username = getTextOfParagraph(data.blocks[0].paragraphs[0]);
     
     if(!validateUsername(username)){
         return message.reply("not valid username");
     }
-    message.channel.send("username: "+username);
 
     //get troop count
     let troopData = getTroopData(data);
@@ -41,21 +51,47 @@ module.exports = async (client, message) =>{
     troopData = troopData.replace("(", "");
     troopData = troopData.replace(")", "");
     let troopDataParts=troopData.split("/");
-    let troopAmount=0;
-    console.log(troopData)
-    if(troopDataParts[0].indexOf("+")>-1){
-        troopAmount=parseInt(troopDataParts[0].substring(0, troopDataParts[0].indexOf("+"))) + parseInt(troopDataParts[0].substring(troopDataParts[0].indexOf("+")+1, troopDataParts[0].indexOf("w")));
-    }
-    else{
-        troopAmount=troopDataParts[0];
-    }
+    troopAmount= calculateTroopAmountWithWounded(troopDataParts[0]);
     let troopCap = troopDataParts[1];
 
     //get troop types and amount
+    let troopTypes = await db.query(`SELECT id,name FROM troop`).then(rows =>{return rows;});
+    let troopsMap = new Map();
+    for(row of troopTypes){
+        troopsMap.set(row.name, row.id);
+    }
+
+    let units = new Array;
+    for(let i = 0; i < data.blocks.length; i++){
+        for(paragraph of data.blocks[i].paragraphs){
+            let troopName = getTextOfParagraph(paragraph);
+            if(troopsMap.has(troopName)){
+                let troopTypeAmount = calculateTroopAmountWithWounded(getTextOfParagraph(data.blocks[i+1].paragraphs[0]));
+                console.log(troopName+": "+troopTypeAmount)
+                units.push({troopName, troopTypeAmount});
+                
+
+            }
+        }
+    }
+    for(block of data.blocks){
+        
+    }
+   fs
 
 
-    message.channel.send("troop count: "+troopAmount)
-    message.channel.send("troop Cap: "+troopCap)
+   let output=`\`\`\`\nusername: ${username} \ncurrent troops: ${troopAmount} \nmaximum party size: ${troopCap} \n\ntroops:\n`;
+
+   for(unit of units){
+       output+=unit.troopName+": "+unit.troopTypeAmount+"\n";
+   }
+   output+="```";
+
+    const embed = new Discord.MessageEmbed()
+    .setTitle("Debug output")
+    .setDescription(output);
+
+    message.channel.send({embeds: [embed]});
 };
 
 function getTextOfParagraph(paragraph){
@@ -68,7 +104,7 @@ function getTextOfParagraph(paragraph){
                 text+=" ";
             }
             else if(symbol.property && symbol.property.detectedBreak && symbol.property.detectedBreak.type=="LINE_BREAK"){
-                text+="\n";
+                //text+="\n";
             }
         }
     }
@@ -89,6 +125,16 @@ function getTroopData(data){
     }
     throw "no troop data found";
 }
+
+function calculateTroopAmountWithWounded(str){ //25 or 25+4w
+    if(str.indexOf("+")>-1){
+        return parseInt(str.substring(0, str.indexOf("+"))) + parseInt(str.substring(str.indexOf("+")+1, str.indexOf("w")));
+    }
+    else{
+        return str;
+    }
+}
+
 
 
 function validateUsername(username){
