@@ -1,7 +1,6 @@
 const Discord = require("discord.js");
 const db = require("../database/db.js");
-const errorEmbed = require("../embeds/error.js");
-const successEmbed = require("../embeds/success.js")
+const embeds = require("../embeds/embeds.js");
 
 exports.run = async (client, message, args) =>{
     if(message.mentions.channels.size==0){
