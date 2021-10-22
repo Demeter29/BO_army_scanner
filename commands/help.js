@@ -1,9 +1,11 @@
 const Discord = require("discord.js");
 
 exports.run = async (client, message, args) =>{
-    message.channel.send("ok")
-    console.log(message.member.id)
-    console.log(message.member.user.id)
+    const helpEmbed = new Discord.MessageEmbed()
+    .setTitle("BO Army Organizer")
+    .setDescription("");
+
+    message.channel.send({embeds: [helpEmbed]});
 }
 
 exports.config = {

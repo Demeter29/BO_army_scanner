@@ -31,13 +31,6 @@ module.exports = async (client, message) =>{
     const [result] = await visionClient.documentTextDetection(croppedImg);
     const data = result.fullTextAnnotation.pages[0];
 
-    fs.writeFile('results.json', JSON.stringify(data), err => {
-        if (err) {
-          console.error(err)
-          return
-        };
-    });
-
     //get username
     let username = getTextOfParagraph(data.blocks[0].paragraphs[0]);
     
@@ -74,11 +67,19 @@ module.exports = async (client, message) =>{
             }
         }
     }
-    for(block of data.blocks){
-        
-    }
-   fs
+    
+    await db.query(`REPLACE INTO user VALUES(?, ?, ?, 0);`, [message.author.id, username, troopCap]);
+    await db.query(`DELETE FROM quantity WHERE user_id=${message.author.id}`);
 
+    db.query(`SELECT id FROM participation WHERE user_id=${message.author.id} AND guild_id=${message.guild.id}`).then(rows =>{
+        if(rows.length==0){
+            db.query(`INSERT INTO participation (user_id, guild_id) VALUES(${message.author.id}, ${message.guild.id})`);
+        }
+    });
+
+    for(unit of units){
+        db.query(`INSERT INTO quantity (user_id, troop_id, amount) VALUES(${message.author.id}, ${troopsMap.get(unit.troopName)}, ${unit.troopTypeAmount})`)
+    }
 
    let output=`\`\`\`\nusername: ${username} \ncurrent troops: ${troopAmount} \nmaximum party size: ${troopCap} \n\ntroops:\n`;
 
@@ -127,15 +128,16 @@ function getTroopData(data){
 }
 
 function calculateTroopAmountWithWounded(str){ //25 or 25+4w
+    console.log(str)
     if(str.indexOf("+")>-1){
-        return parseInt(str.substring(0, str.indexOf("+"))) + parseInt(str.substring(str.indexOf("+")+1, str.indexOf("w")));
+        console.log(parseInt(str.substring(0, str.indexOf("+"))) + parseInt(str.substring(str.indexOf("+")+1, str.indexOf("w"))))
+        return parseInt(str.substring(0, str.indexOf("+"))) + parseInt(str.substring(str.indexOf("+")+1, str.toLocaleLowerCase().indexOf("w")));
+        
     }
     else{
         return str;
     }
 }
-
-
 
 function validateUsername(username){
     if(username<3 || username.length>14){

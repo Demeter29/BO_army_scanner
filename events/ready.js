@@ -8,7 +8,7 @@ module.exports = async(client) => {
     await db.query(`SELECT * FROM guild WHERE id='${guild.id}';`)
     .then(async (rows) => {
       if(rows.length==0){
-        await db.query(`INSERT INTO guild VALUES('${guild.id}', '${client.config.defaultPrefix}');`).then() 
+        await db.query(`INSERT INTO guild VALUES('${guild.id}', '${client.config.defaultPrefix}', -1);`).then() 
         client.guildPrefixes.set(guild.id, client.config.defaultPrefix);
       }
       else{

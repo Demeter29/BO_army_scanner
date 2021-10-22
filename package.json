@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@google-cloud/vision": "^2.4.0",
+    "as-table": "^1.0.55",
     "canvas": "^2.8.0",
     "discord.js": "^13.2.0",
     "mysql2": "^2.3.2"

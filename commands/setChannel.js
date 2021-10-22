@@ -18,7 +18,7 @@ exports.run = async (client, message, args) =>{
     }
 
     db.query(`UPDATE guild SET upload_channel='${mentionedChannel.id}' WHERE id='${message.guild.id}'`).then(()=>{
-        message.reply({embeds: [successEmbed.setDescription("Upload channel has been updated!")]});
+        message.reply({embeds: [embeds.successEmbed.setDescription("Upload channel has been updated!")]});
     })
     
 

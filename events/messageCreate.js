@@ -7,7 +7,7 @@ module.exports = async (client, message) =>{
     if(!message.guild) return;
 
     if(client.uploadChannels.includes(message.channel.id) && message.attachments.size>0){
-        return require("../logics/scanner.js")(client, message);
+        return require("../ocr/scanner.js")(client, message);
     }
 
     const prefix=client.guildPrefixes.get(message.guild.id);
