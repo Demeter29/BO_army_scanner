@@ -1,6 +1,6 @@
 const {Client, Message, MessageEmbed, MessageActionRow, MessageSelectMenu, MessageButton} = require("discord.js");
 const db = require("../database/db.js");
-let asTable = require ('as-table').configure({minColumnWidths: [13, 13, 13, 13]});
+let asTable = require ('as-table').configure({minColumnWidths: [8, 17, 17, 16]});
 
 
 exports.run = async  (client, message, args) =>{
@@ -10,14 +10,14 @@ exports.run = async  (client, message, args) =>{
     let optionIndex;
 
     const leaderboardEmbed = new MessageEmbed()
-    .setTitle("Leaderboard")
-
-
-
-    const row = new MessageActionRow()
+    .setTitle(message.guild.name+" Leaderboard")
+    .setDescription("Use the dropdown menu to select a leaderboard!")
+    .setThumbnail(message.guild.iconURL())
+    const selectRow = new MessageActionRow()
         .addComponents(
             new MessageSelectMenu()
                 .setCustomId('sort-by')
+                .setPlaceholder("Sort by...")
                 .addOptions({
                     label: "Maximum party size",
                     value: "max-party-size",
@@ -43,36 +43,33 @@ exports.run = async  (client, message, args) =>{
                     value: "wages",
                     description: "sort by the hourly wages cost"
                 },
-                ),
+            ),
         )
 
-        const pageRow = new MessageActionRow()
+    const pageRow = new MessageActionRow()
         .addComponents(            
             new MessageButton()
-                .setStyle("PRIMARY")
-                .setEmoji("◀️")
+                .setStyle("SECONDARY")
+                .setEmoji("<arrow_left:901187985272373288>")
                 .setCustomId("page-left"),
             new MessageButton()
-                .setStyle("PRIMARY")
-                .setEmoji("▶️")
+                .setStyle("SECONDARY")
+                .setEmoji("<arrow_right:901187999981781002>")
                 .setCustomId("page-right")
         )
 
-    let leaderboardMessage = await message.channel.send({embeds: [leaderboardEmbed], components: [row, pageRow]});
+    message.channel.send({embeds: [leaderboardEmbed], components: [selectRow]});
 
     const filter = (interaction) =>(
         (interaction.isSelectMenu() || interaction.isButton()) &&
         interaction.user.id == message.author.id &&
-        (interaction.customId == "sort-by" || interaction.customId == "page-left" || interaction.customId == "page-right")
-        
+        (interaction.customId == "sort-by" || interaction.customId == "page-left" || interaction.customId == "page-right")   
     ) 
     
     const collector = message.channel.createMessageComponentCollector({filter });
 
     collector.on('collect', async(collected) =>{
         collected.deferUpdate();
-
-        console.log(currentPage)
 
         if(collected.isSelectMenu()){
             pages = [];
@@ -82,7 +79,6 @@ exports.run = async  (client, message, args) =>{
                     optionIndex=0;
                     break;
                 case 't6-troops':
-                    console.log("got here")
                     rows = await getT6TroopsData(guild);
                     optionIndex=1;
                     break;
@@ -96,29 +92,43 @@ exports.run = async  (client, message, args) =>{
             }
     
             while(rows.length>0){
-                pages.push(rows.splice(0, 20))
+                pages.push(rows.splice(0, 2))
             }
-
             currentPage=0;
+
+            pageRow.components[0].setDisabled(true);
+            if(pages.length==1){
+                pageRow.components[1].setDisabled(true);
+            }
+            else{
+                pageRow.components[1].setDisabled(false);
+            }
         }                                        
         else if(collected.isButton()){
-            if(collected.customId=="page-left" && currentPage>0){
-                console.log("minus")
+            pageRow.components[0].setDisabled(false);
+            pageRow.components[1].setDisabled(false);
+
+            if(collected.customId=="page-left"){
                 currentPage--;
+                if(currentPage==0){
+                    pageRow.components[0].setDisabled(true);
+                }               
             }
             
-            else if(collected.customId=="page-right" && currentPage<pages.length-1){
-                console.log("plus")
+            else if(collected.customId=="page-right"){
                 currentPage++;
+                if(currentPage>=pages.length-1){
+                    pageRow.components[1].setDisabled(true);
+                }
+                
             }
-
         }
 
             leaderboardEmbed.setDescription("```"+asTable(pages[currentPage])+"```");
     
-            row.components[0].options[optionIndex].default=true
-            collected.message.edit({embeds: [leaderboardEmbed], components: [row, pageRow]})
-            row.components[0].options[optionIndex].default=false
+            selectRow.components[0].options[optionIndex].default=true
+            collected.message.edit({embeds: [leaderboardEmbed.setThumbnail().setTitle("").setAuthor(message.guild.name, message.guild.iconURL())], components: [selectRow, pageRow]})
+            selectRow.components[0].options[optionIndex].default=false
 
     })       
                 
