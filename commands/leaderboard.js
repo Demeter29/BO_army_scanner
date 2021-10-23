@@ -101,7 +101,7 @@ exports.run = async  (client, message, args) =>{
             }
     
             while(rows.length>0){
-                pages.push(rows.splice(0, 2))
+                pages.push(rows.splice(0, 19))
             }
             currentPage=0;
 
@@ -161,7 +161,7 @@ async function getT6TroopsData(guild){
     WHERE guild_id=${guild.id}
     AND troop.tier=6
     GROUP BY username
-    ORDER BY 'T6 troops' DESC;
+    ORDER BY \`T6 troops\` DESC;
     `)
 }
 
@@ -174,7 +174,7 @@ async function getT5PlusTroopsData(guild){
     WHERE guild_id=${guild.id}
     AND (troop.tier=5 OR troop.tier=6)
     GROUP BY username
-    ORDER BY 'T5/T6 troops' DESC;
+    ORDER BY \`T5/T6 troops\` DESC;
     `)
 }
 

@@ -3,6 +3,7 @@ const Discord = require("discord.js");
 const db=require("../database/db.js");
 
 module.exports = async (client, message) =>{
+
     if (message.author.bot) return;
     if(!message.guild) return;
 
@@ -26,7 +27,7 @@ module.exports = async (client, message) =>{
     const cmd = client.commands.get(command);
     if (!cmd) return;
     
-    if(cmd.config.adminCmd && !(message.member.permissions.has("ADMINISTRATOR"))) return message.channel.send("you don't have permissions for this command");
+    if(cmd.config.adminCmd && !(message.member.permissions.has("ADMINISTRATOR") || message.member.id!=client.config.devId)) return message.channel.send("you don't have permissions for this command");
 
     cmd.run(client, message, args);
 }

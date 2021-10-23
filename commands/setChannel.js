@@ -3,23 +3,18 @@ const db = require("../database/db.js");
 const embeds = require("../embeds/embeds.js");
 
 exports.run = async (client, message, args) =>{
-    if(message.mentions.channels.size==0){
-        return message.reply({embeds: [errorEmbed.setDescription("You need to mention 1 channel!")]});
-    }
-    if(message.mentions.channels.size>1){
-        return message.reply({embeds: [errorEmbed.setDescription("You can only mention 1 channel!")]});
-    }
-    const mentionedChannel = message.mentions.channels.first();
-    if(!mentionedChannel.viewable){
-        return message.reply({embeds: [errorEmbed.setDescription("I Don't have permission to that channel!")]});
-    }
-    if(!mentionedChannel.isText()){
-        return message.reply({embeds: [errorEmbed.setDescription("You need to mention a text channel")]});
+
+    let previousChannel = await db.query(`SELECT upload_channel FROM guild WHERE id=${message.guild.id}`).then(rows =>{return rows});
+    
+    if(previousChannel.length==1){
+        previousChannelId= previousChannel.upload_channel
+        client.uploadChannels.splice(client.uploadChannels.indexOf(previousChannelId, 1));
     }
 
-    db.query(`UPDATE guild SET upload_channel='${mentionedChannel.id}' WHERE id='${message.guild.id}'`).then(()=>{
-        message.reply({embeds: [embeds.successEmbed.setDescription("Upload channel has been updated!")]});
+    db.query(`UPDATE guild SET upload_channel='${message.channel.id}' WHERE id='${message.guild.id}'`).then(()=>{
+        message.reply({embeds: [embeds.successEmbed.setDescription(`${message.channel} is now the upload channel!`)]});
     })
+    client.uploadChannels.push(message.channel.id)
     
 
 }
