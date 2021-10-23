@@ -36,7 +36,7 @@ exports.run = async  (client, message, args) =>{
                 {
                     label: "Gold",
                     value: "gold",
-                    description: "sort by the amount of gold"
+                    description: "sort by gold balance"
                 },
                 {
                     label: "Wages",
@@ -85,6 +85,10 @@ exports.run = async  (client, message, args) =>{
                 case 't5-troops':
                     rows = await getT5PlusTroopsData(guild);
                     optionIndex=2;
+                    break;
+                case 'gold':
+                    rows = await getGoldData(guild);
+                    optionIndex=3;
                     break;
             }
             for(let i=0;i<rows.length;i++){
@@ -140,13 +144,11 @@ exports.config = {
 }
 
 async function getMaxPartySizeData(guild){
-    let rows = await db.query(`SELECT username, max_party_size AS size FROM user INNER JOIN participation ON user.id=participation.user_id WHERE guild_id=${guild.id} ORDER BY max_party_size DESC`).then(rows =>{return rows;})
-
-    return rows;
+    return await db.query(`SELECT username, max_party_size AS size FROM user INNER JOIN participation ON user.id=participation.user_id WHERE guild_id=${guild.id} ORDER BY max_party_size DESC`).then(rows =>{return rows;})
 }
 
 async function getT6TroopsData(guild){
-    let rows = await db.query(`
+    return await db.query(`
     SELECT username, SUM(quantity.amount) AS 'T6 troops' FROM user 
     INNER JOIN participation ON user.id=participation.user_id 
     INNER JOIN quantity ON user.id=quantity.user_id 
@@ -155,13 +157,11 @@ async function getT6TroopsData(guild){
     AND troop.tier=6
     GROUP BY username
     ORDER BY 'T6 troops' DESC;
-    `).then(rows =>{return rows;})
-
-    return rows;
+    `)
 }
 
 async function getT5PlusTroopsData(guild){
-    let rows = await db.query(`
+    return await db.query(`
     SELECT username, SUM(quantity.amount) AS 'T5/T6 troops' FROM user 
     INNER JOIN participation ON user.id=participation.user_id 
     INNER JOIN quantity ON user.id=quantity.user_id 
@@ -170,8 +170,16 @@ async function getT5PlusTroopsData(guild){
     AND (troop.tier=5 OR troop.tier=6)
     GROUP BY username
     ORDER BY 'T5/T6 troops' DESC;
-    `).then(rows =>{return rows;})
+    `)
+}
 
-    return rows;
+async function getGoldData(guild){
+    return db.query(`
+    SELECT username, gold FROM user
+    INNER JOIN participation ON user.id=participation.user_id
+    WHERE guild_id=${guild.id}
+    AND gold>0
+    ORDER BY gold DESC;
+    `)
 }
 
