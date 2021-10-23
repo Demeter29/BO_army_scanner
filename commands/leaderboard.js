@@ -1,6 +1,7 @@
 const {Client, Message, MessageEmbed, MessageActionRow, MessageSelectMenu, MessageButton} = require("discord.js");
 const db = require("../database/db.js");
 let asTable = require ('as-table').configure({minColumnWidths: [8, 17, 17, 16]});
+const { abbreviateNumber } = require("js-abbreviation-number");
 
 
 exports.run = async  (client, message, args) =>{
@@ -90,6 +91,10 @@ exports.run = async  (client, message, args) =>{
                     rows = await getGoldData(guild);
                     optionIndex=3;
                     break;
+                case 'wages':
+                    rows = await getWageData(guild);
+                    optionIndex=4;
+                    break;
             }
             for(let i=0;i<rows.length;i++){
                 rows[i]= Object.assign({rank: "#"+(i+1)}, rows[i])
@@ -174,12 +179,30 @@ async function getT5PlusTroopsData(guild){
 }
 
 async function getGoldData(guild){
-    return db.query(`
+    let rows = await db.query(`
     SELECT username, gold FROM user
     INNER JOIN participation ON user.id=participation.user_id
     WHERE guild_id=${guild.id}
     AND gold>0
     ORDER BY gold DESC;
+    `)
+
+    for(row of rows){
+        row.gold= abbreviateNumber(row.gold, 2);
+    }
+
+    return rows;
+}
+
+async function getWageData(guild){
+    return db.query(`
+    SELECT username, SUM(quantity.amount*troop.wage)AS 'wages' FROM user 
+    INNER JOIN participation ON user.id=participation.user_id 
+    INNER JOIN quantity ON user.id=quantity.user_id 
+    INNER JOIN troop ON quantity.troop_id=troop.id 
+    WHERE guild_id=900812099188588565
+    GROUP BY username  
+    ORDER BY \`wages\` DESC;
     `)
 }
 
