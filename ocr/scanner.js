@@ -37,13 +37,13 @@ module.exports = async (client, message) =>{
 
         const croppedImg = cropCanvas.toBuffer();
 
-        //message.reply({files: [croppedImg]})
+        message.reply({files: [croppedImg]})
         
         
         try{
             const [result] = await visionClient.documentTextDetection(croppedImg);
             const data = result.fullTextAnnotation.pages[0];
-
+            console.log(data.blocks.length)
             //get username
             let username = getTextOfParagraph(data.blocks[0].paragraphs[0]);
             

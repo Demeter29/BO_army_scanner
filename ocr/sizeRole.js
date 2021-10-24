@@ -1,4 +1,4 @@
-const Discord = require("Discord.js");
+const Discord = require("discord.js");
 const embeds = require("../embeds/embeds.js");
 const Canvas = require("canvas");
 const db = require("../database/db.js");
