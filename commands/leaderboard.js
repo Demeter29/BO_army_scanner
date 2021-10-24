@@ -59,7 +59,7 @@ exports.run = async  (client, message, args) =>{
                 .setCustomId("page-right")
         )
 
-    message.channel.send({embeds: [leaderboardEmbed], components: [selectRow]});
+    let leaderboardMessage = await message.channel.send({embeds: [leaderboardEmbed], components: [selectRow]});
 
     const filter = (interaction) =>(
         (interaction.isSelectMenu() || interaction.isButton()) &&
@@ -67,10 +67,11 @@ exports.run = async  (client, message, args) =>{
         (interaction.customId == "sort-by" || interaction.customId == "page-left" || interaction.customId == "page-right")   
     ) 
     
-    const collector = message.channel.createMessageComponentCollector({filter });
+    const collector = message.channel.createMessageComponentCollector({filter, time: 300000});
 
     collector.on('collect', async(collected) =>{
         collected.deferUpdate();
+        collector.resetTimer();
 
         if(collected.isSelectMenu()){
             pages = [];
@@ -95,6 +96,9 @@ exports.run = async  (client, message, args) =>{
                     rows = await getWageData(guild);
                     optionIndex=4;
                     break;
+            }
+            if(rows.length==0){
+                return;
             }
             for(let i=0;i<rows.length;i++){
                 rows[i]= Object.assign({rank: "#"+(i+1)}, rows[i])
@@ -139,7 +143,13 @@ exports.run = async  (client, message, args) =>{
             collected.message.edit({embeds: [leaderboardEmbed.setThumbnail().setTitle("").setAuthor(message.guild.name, message.guild.iconURL())], components: [selectRow, pageRow]})
             selectRow.components[0].options[optionIndex].default=false
 
-    })       
+    }) 
+    
+    collector.on('end', async () =>{
+
+        selectRow.components[0].setDisabled();
+        leaderboardMessage.edit({embeds: [leaderboardEmbed], components: [selectRow]});
+    })
                 
 }   
 

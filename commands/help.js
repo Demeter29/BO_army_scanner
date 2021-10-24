@@ -17,7 +17,7 @@ exports.run = async (client, message, args) =>{
         });
         
     helpEmbed.addField("General Commands:", "```+leaderboard```shows you the leaderboard of this guild \n‎");
-    helpEmbed.addField("Admin Commands:", "```+setchannel```sets the current channel as the upload channel where users can upload their party screen. The bot will only take screenshots from this channel!\n‎");
+    helpEmbed.addField("Admin Commands:", "```+setchannel```sets the current channel as the upload channel where users can upload their party screen. The bot will only take screenshots from this channel!\n\n```+role```Set up roles the players will get as they level up their maximum party size\n‎");
 
     message.channel.send({embeds: [helpEmbed], components: [helpRow]});
 }

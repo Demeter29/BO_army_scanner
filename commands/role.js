@@ -3,8 +3,15 @@ const db = require("../database/db.js");
 const embeds = require("../embeds/embeds.js");
 
 exports.run = async (client, message, args) =>{
-    
-        if(args[0]=="list"){
+        if(args.length==0){
+            const helpEmbed = new Discord.MessageEmbed()
+            .setTitle("setting up roles")
+            .setDescription("With this command you can set up roles players will get as they level up their maximum party size. (They will only get the highest role)")
+            .addField("Commands:", "```+role list```List all the roles that is currently being awarded to players\n\n```+role add {role name} {required party size}```Add a new role to be awarded to players, don't include the brackets!\n\n```+role remove {role name}```Remove a role from the list so it won't be awarded to players anymore")
+            .setFooter("if you need further help join our support server")
+            return message.channel.send({embeds: [helpEmbed]})
+        }
+        else if(args[0]=="list"){
             const roles = await db.query(`select role_id, size FROM size_role WHERE guild_id=${message.guild.id} ORDER BY size DESC`);
             console.log(roles)
             let output="";
