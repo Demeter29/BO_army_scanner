@@ -3,7 +3,7 @@ const db = require("../database/db.js");
 const embeds = require("../embeds/embeds.js");
 
 exports.run = async (client, message, args) =>{
-        if(args.length==0){
+        if(args.length==0 || args[0] == "help"){
             const helpEmbed = new Discord.MessageEmbed()
             .setTitle("setting up roles")
             .setDescription("With this command you can set up roles players will get as they level up their maximum party size. (They will only get the highest role)")
@@ -12,7 +12,8 @@ exports.run = async (client, message, args) =>{
             return message.channel.send({embeds: [helpEmbed]})
         }
         else if(args[0]=="list"){
-            const roles = await db.query(`select role_id, size FROM size_role WHERE guild_id=${message.guild.id} ORDER BY size DESC`);
+            console.log(message.guild.id)
+            const roles = await db.query(`SELECT role_id, size FROM size_role WHERE guild_id='${message.guild.id}' ORDER BY size DESC`);
             console.log(roles)
             let output="";
             for(role of roles){
@@ -37,7 +38,7 @@ exports.run = async (client, message, args) =>{
                     throw "The size must be a number!"
                 }
         
-                let role = await message.guild.roles.cache.find(r => (r.name.includes(args[1]))) || message.guild.roles.cache.get(args[1]) || message.mentions.roles.first()
+                let role = await message.guild.roles.cache.find(r => (r.name.toLowerCase()==(args[1].toLowerCase()))) || message.guild.roles.cache.get(args[1]) || message.mentions.roles.first()
                             
                 if(!role){
                    role = await message.guild.roles.create({
@@ -53,7 +54,7 @@ exports.run = async (client, message, args) =>{
  
                 message.reply({embeds: [embeds.successEmbed.setDescription(`${role} will now be assigned to players who's maximum party size is at least ${args[2]}`)]});
  
-                db.query(`INSERT INTO size_role VALUES('${role.id}', ${args[2]}, '${guild.id}')`);
+                db.query(`INSERT INTO size_role VALUES('${role.id}', ${args[2]}, '${message.guild.id}')`);
             }
             catch(error){
                 return message.reply({embeds: [embeds.errorEmbed.setDescription(error+"\n\n usage: ```+role add {role name} {size}```without the brackets")]})

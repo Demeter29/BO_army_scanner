@@ -114,7 +114,11 @@ module.exports = async (client, message) =>{
             }
 
             //size role
-            const roleMessage = await require("./sizeRole.js")(client, message, maxPartySize);
+            const roleMessage = await require("./sizeRole.js")(client, message, maxPartySize).catch(error =>{
+                if (error.code == Discord.Constants.APIErrors.MISSING_PERMISSIONS) {
+                    //message.channel.send({embeds: [embeds.errorEmbed.setDescription("I don't have permission to give you roles\n Every role listed `+role list` needs to be under ")]})
+                }
+            });;
 
             //db
             await db.query(`REPLACE INTO user VALUES(?, ?, ?, ?);`, [message.author.id, username, maxPartySize, gold]);

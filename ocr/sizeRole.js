@@ -35,7 +35,8 @@ module.exports = async (client, message, maxPartySize) =>{
             }
             else{
                 for(role of roles){
-                    await message.member.roles.remove(roleIds);
+                    await message.member.roles.remove(roleIds)
+
                     return message.member.roles.add(roles[i].role_id);
                 }
             }
