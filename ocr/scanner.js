@@ -43,7 +43,6 @@ module.exports = async (client, message) =>{
         try{
             const [result] = await visionClient.documentTextDetection(croppedImg);
             const data = result.fullTextAnnotation.pages[0];
-            console.log(data.blocks.length)
             //get username
             let username = getTextOfParagraph(data.blocks[0].paragraphs[0]);
             
@@ -95,7 +94,7 @@ module.exports = async (client, message) =>{
             let sum=1;
             for(unit of units){
                 if(!validateTroopCount(unit.troopTypeAmount)){
-                    throw {msg: "troop amount is not valid", data: [username, currentTroopCount, maxPartySize, units]};
+                    throw {msg: "couldn't scan one of the troop's amount", data: [username, currentTroopCount, maxPartySize, units]};
                 }
                 sum+=unit.troopTypeAmount;
             }
@@ -162,12 +161,11 @@ module.exports = async (client, message) =>{
             if(x<2){
                 continue;
             }
-            console.log(error)
             message.reply({embeds: [embeds.errorEmbed.setDescription(
                 `I failed to scan your screenshot :( \n
                 error message: \`${error.msg}\`\n
                 try doing these:
-                -Make sure to include the whole party screen and not just a part of it.\n-Ensure that your troop list on the right is scrolled all the way to to top.\n-Make sure all of your troops fit into the screenshot.\n-Try not have anything on the right side of your screen that is not part of bannerlord.\n-"Options > Gameplay > UI Scale" needs to be 1 or at least close to it.\n-sometimes wounded soldiers can mess up the scan, wait until they are healed.`
+                -Make sure to include the whole party screen and not just a part of it.\n-Ensure that your troop list on the right is scrolled all the way to the top.\n-Make sure all of your troops fit into the screenshot.\n-Try not to have anything on the right side of your screen that is not part of bannerlord.\n-"Options > Gameplay > UI Scale" needs to be 1 or at least close to it.\n-sometimes wounded soldiers can mess up the scan, wait until they are healed.`
             )]})
 
             

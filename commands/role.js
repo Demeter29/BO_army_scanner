@@ -12,9 +12,7 @@ exports.run = async (client, message, args) =>{
             return message.channel.send({embeds: [helpEmbed]})
         }
         else if(args[0]=="list"){
-            console.log(message.guild.id)
             const roles = await db.query(`SELECT role_id, size FROM size_role WHERE guild_id='${message.guild.id}' ORDER BY size DESC`);
-            console.log(roles)
             let output="";
             for(role of roles){
                 output+=`${message.guild.roles.resolve(role.role_id)}: ${role.size}\n`;
