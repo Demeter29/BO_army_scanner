@@ -17,7 +17,7 @@ exports.run = async (client, message, args) =>{
             console.log(roles)
             let output="";
             for(role of roles){
-                output+=`${message.guild.roles.resolve(role.role_id)} : ${role.size}\n`;
+                output+=`${message.guild.roles.resolve(role.role_id)}: ${role.size}\n`;
             }
 
             const listEmbed = new Discord.MessageEmbed()

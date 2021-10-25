@@ -97,9 +97,7 @@ exports.run = async  (client, message, args) =>{
                     optionIndex=4;
                     break;
             }
-            if(rows.length==0){
-                return;
-            }
+            
             for(let i=0;i<rows.length;i++){
                 rows[i]= Object.assign({rank: "#"+(i+1)}, rows[i])
             }
@@ -110,7 +108,7 @@ exports.run = async  (client, message, args) =>{
             currentPage=0;
 
             pageRow.components[0].setDisabled(true);
-            if(pages.length==1){
+            if(pages.length<2){
                 pageRow.components[1].setDisabled(true);
             }
             else{
@@ -137,11 +135,19 @@ exports.run = async  (client, message, args) =>{
             }
         }
 
-            leaderboardEmbed.setDescription("```"+asTable(pages[currentPage])+"```");
-    
-            selectRow.components[0].options[optionIndex].default=true
-            collected.message.edit({embeds: [leaderboardEmbed.setThumbnail().setTitle("").setAuthor(message.guild.name, message.guild.iconURL())], components: [selectRow, pageRow]})
-            selectRow.components[0].options[optionIndex].default=false
+        if(pages.length==0){
+            output="‎no data";
+        }
+        else{
+            output=asTable(pages[currentPage]);
+        }
+        
+
+        leaderboardEmbed.setDescription("```"+output+"```");
+
+        selectRow.components[0].options[optionIndex].default=true
+        collected.message.edit({embeds: [leaderboardEmbed.setThumbnail().setTitle("").setAuthor(message.guild.name, message.guild.iconURL())], components: [selectRow, pageRow]})
+        selectRow.components[0].options[optionIndex].default=false
 
     }) 
     
