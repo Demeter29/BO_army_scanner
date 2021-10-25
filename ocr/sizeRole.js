@@ -22,7 +22,6 @@ module.exports = async (client, message, maxPartySize) =>{
     let roleMessage= "";
     for(let i=0;i<roles.length;i++){
         if(maxPartySize>=roles[i].size){
-            console.log("got here")
             if(memberRoles.has(roles[i].role_id)){
                 roleIds.splice(roleIds.indexOf(roles[i].role_id), 1);
                 await message.member.roles.remove(roleIds);

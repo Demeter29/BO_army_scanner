@@ -29,7 +29,7 @@ module.exports = async (client, message) =>{
     const colors= ["black", "white", "grey",]
     for(let x=0;x<3;x++){
 
-        console.log(x)
+        console.log("attempt "+x)
         ctx.fillStyle = colors[x];
         ctx.fillRect(cropCanvas.width*0.62, cropCanvas.height*0.16, cropCanvas.width*0.189, cropCanvas.height);  
         ctx.fillRect(cropCanvas.width*0.29, cropCanvas.height*0.899, cropCanvas.width, cropCanvas.height);
@@ -48,13 +48,13 @@ module.exports = async (client, message) =>{
             let username = getTextOfParagraph(data.blocks[0].paragraphs[0]);
             
             if(!validateUsername(username)){
-                throw {msg: "username not found", data: [username]};
+                throw {msg: "couldn't find username", data: [username]};
             }
 
             //get troop count
             let troopBlockIndex = findBlockWithString(data, "troops");
             if(troopBlockIndex==-1){
-                throw {msg:"troop data not found", data: [username]};
+                throw {msg:"couldn't find max party size", data: [username]};
             }
             troopData = getTextOfParagraph(data.blocks[troopBlockIndex].paragraphs[0]);
             troopData = troopData.split("(")[1]
@@ -95,12 +95,12 @@ module.exports = async (client, message) =>{
             let sum=1;
             for(unit of units){
                 if(!validateTroopCount(unit.troopTypeAmount)){
-                    throw {msg: "TypeTroopCount is not valid", data: [username, currentTroopCount, maxPartySize, units]};
+                    throw {msg: "troop amount is not valid", data: [username, currentTroopCount, maxPartySize, units]};
                 }
                 sum+=unit.troopTypeAmount;
             }
             if(sum!=currentTroopCount){
-                throw {msg: "TypeTroopCount sum is not equal to currentTroopCount", data: [username, currentTroopCount, maxPartySize, units]};
+                throw {msg: "couldn't scan all the troops", data: [username, currentTroopCount, maxPartySize, units]};
             }
 
             //get gold amount
@@ -120,23 +120,29 @@ module.exports = async (client, message) =>{
                 }
             });;
 
+            
+
             //db
             await db.query(`REPLACE INTO user VALUES(?, ?, ?, ?);`, [message.author.id, username, maxPartySize, gold]);
             await db.query(`DELETE FROM quantity WHERE user_id=${message.author.id}`);
 
-            db.query(`SELECT id FROM participation WHERE user_id=${message.author.id} AND guild_id=${message.guild.id}`).then(rows =>{
+            await db.query(`SELECT id FROM participation WHERE user_id=${message.author.id} AND guild_id=${message.guild.id}`).then(async (rows) =>{
                 if(rows.length==0){
-                    db.query(`INSERT INTO participation (user_id, guild_id) VALUES(${message.author.id}, ${message.guild.id})`);
+                    await db.query(`INSERT INTO participation (user_id, guild_id) VALUES(${message.author.id}, ${message.guild.id})`);
                 }
             });
 
             for(unit of units){
-                db.query(`INSERT INTO quantity (user_id, troop_id, amount) VALUES(${message.author.id}, ${troopsMap.get(unit.troopName)}, ${unit.troopTypeAmount})`)
+                await db.query(`INSERT INTO quantity (user_id, troop_id, amount) VALUES(${message.author.id}, ${troopsMap.get(unit.troopName)}, ${unit.troopTypeAmount})`)
             }
 
+            //rank
+            let rankOutput = await require("./rank.js")(message.member, username);
+
+
             userOutput=asTable([["username: ", username],
-                                ["Maximum party size: ", maxPartySize],
-                                ["Gold Balance:", abbreviateNumber(gold, 2)]]);
+                                ["Maximum party size: ", maxPartySize, "(#2)"],
+                                ["Gold Balance:", abbreviateNumber(gold, 2), "(#5)"]]);
 
             let troops= [];
             for(unit of units){
@@ -146,7 +152,7 @@ module.exports = async (client, message) =>{
 
             const embed = new Discord.MessageEmbed()
             .setTitle("Results")
-            .setDescription("Player Info:```"+userOutput+"```\n\n Troops:```"+troopsOutput+"```");
+            .setDescription("Player Info:```"+rankOutput    +"```\n\n Troops:```"+troopsOutput+"```");
 
             message.channel.send({embeds: [embed]});
 
@@ -254,7 +260,6 @@ function convertGold(gold){
         amount = gold;
     }
 
-    console.log(amount)
     return amount;
 }
 

@@ -1,8 +1,6 @@
 const {Client, Message, MessageEmbed, MessageActionRow, MessageSelectMenu, MessageButton} = require("discord.js");
 const db = require("../database/db.js");
-let asTable = require ('as-table').configure({minColumnWidths: [8, 17, 17, 16]});
-const { abbreviateNumber } = require("js-abbreviation-number");
-
+let asTable = require ('as-table').configure({minColumnWidths: [8, 17, 17, 16],});
 
 exports.run = async  (client, message, args) =>{
     let pages = new Array();
@@ -77,29 +75,25 @@ exports.run = async  (client, message, args) =>{
             pages = [];
             switch (collected.values[0]){
                 case 'max-party-size':
-                    rows = await getMaxPartySizeData(message.guild);
+                    rows = await db.getMaxPartySizeData(message.guild);
                     optionIndex=0;
                     break;
                 case 't6-troops':
-                    rows = await getT6TroopsData(guild);
+                    rows = await db.getT6TroopsData(guild);
                     optionIndex=1;
                     break;
                 case 't5-troops':
-                    rows = await getT5PlusTroopsData(guild);
+                    rows = await db.getT5PlusTroopsData(guild);
                     optionIndex=2;
                     break;
                 case 'gold':
-                    rows = await getGoldData(guild);
+                    rows = await db.getGoldData(guild);
                     optionIndex=3;
                     break;
                 case 'wages':
-                    rows = await getWageData(guild);
+                    rows = await db.getWageData(guild);
                     optionIndex=4;
                     break;
-            }
-            
-            for(let i=0;i<rows.length;i++){
-                rows[i]= Object.assign({rank: "#"+(i+1)}, rows[i])
             }
     
             while(rows.length>0){
@@ -164,61 +158,4 @@ exports.config = {
     adminCmd: false
 }
 
-async function getMaxPartySizeData(guild){
-    return await db.query(`SELECT username, max_party_size AS size FROM user INNER JOIN participation ON user.id=participation.user_id WHERE guild_id=${guild.id} ORDER BY max_party_size DESC`).then(rows =>{return rows;})
-}
-
-async function getT6TroopsData(guild){
-    return await db.query(`
-    SELECT username, SUM(quantity.amount) AS 'T6 troops' FROM user 
-    INNER JOIN participation ON user.id=participation.user_id 
-    INNER JOIN quantity ON user.id=quantity.user_id 
-    INNER JOIN troop ON quantity.troop_id=troop.id 
-    WHERE guild_id=${guild.id}
-    AND troop.tier=6
-    GROUP BY username
-    ORDER BY \`T6 troops\` DESC;
-    `)
-}
-
-async function getT5PlusTroopsData(guild){
-    return await db.query(`
-    SELECT username, SUM(quantity.amount) AS 'T5/T6 troops' FROM user 
-    INNER JOIN participation ON user.id=participation.user_id 
-    INNER JOIN quantity ON user.id=quantity.user_id 
-    INNER JOIN troop ON quantity.troop_id=troop.id 
-    WHERE guild_id=${guild.id}
-    AND (troop.tier=5 OR troop.tier=6)
-    GROUP BY username
-    ORDER BY \`T5/T6 troops\` DESC;
-    `)
-}
-
-async function getGoldData(guild){
-    let rows = await db.query(`
-    SELECT username, gold FROM user
-    INNER JOIN participation ON user.id=participation.user_id
-    WHERE guild_id=${guild.id}
-    AND gold>0
-    ORDER BY gold DESC;
-    `)
-
-    for(row of rows){
-        row.gold= abbreviateNumber(row.gold, 2);
-    }
-
-    return rows;
-}
-
-async function getWageData(guild){
-    return db.query(`
-    SELECT username, SUM(quantity.amount*troop.wage)AS 'wages' FROM user 
-    INNER JOIN participation ON user.id=participation.user_id 
-    INNER JOIN quantity ON user.id=quantity.user_id 
-    INNER JOIN troop ON quantity.troop_id=troop.id 
-    WHERE guild_id=900812099188588565
-    GROUP BY username  
-    ORDER BY \`wages\` DESC;
-    `)
-}
 
