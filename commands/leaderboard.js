@@ -79,19 +79,19 @@ exports.run = async  (client, message, args) =>{
                     optionIndex=0;
                     break;
                 case 't6-troops':
-                    rows = await db.getT6TroopsData(guild);
+                    rows = await db.getT6TroopsData(message.guild);
                     optionIndex=1;
                     break;
                 case 't5-troops':
-                    rows = await db.getT5PlusTroopsData(guild);
+                    rows = await db.getT5PlusTroopsData(message.guild);
                     optionIndex=2;
                     break;
                 case 'gold':
-                    rows = await db.getGoldData(guild);
+                    rows = await db.getGoldData(message.guild);
                     optionIndex=3;
                     break;
                 case 'wages':
-                    rows = await db.getWageData(guild);
+                    rows = await db.getWageData(message.guild);
                     optionIndex=4;
                     break;
             }
