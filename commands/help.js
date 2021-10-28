@@ -29,7 +29,12 @@ exports.config = {
 
 const helpRow = new Discord.MessageActionRow().addComponents(
     new Discord.MessageButton()
-.setStyle("LINK")
-.setLabel("Support Server")
-.setURL("https://discord.gg/zQcCybVkqx")
-)
+        .setStyle("LINK")
+        .setLabel("Support Server")
+        .setURL("https://discord.gg/zQcCybVkqx"),
+    new Discord.MessageButton()
+    .setStyle("LINK")
+    .setLabel("Invite bot to your server")
+    .setURL("https://discord.com/api/oauth2/authorize?client_id=900836857322041395&permissions=268435456&scope=bot")
+    )
+
