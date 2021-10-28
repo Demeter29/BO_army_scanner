@@ -16,7 +16,7 @@ module.exports = async (client, message, debug) =>{
 
     const img = message.attachments.first();
 
-    if(img.height<1070 || img.width<1910){
+    if(img.height<1060 || img.width<1900){
         return message.reply({embeds: [embeds.errorEmbed.setDescription("Image must be at least 1920x1080 pixels")]})
     }
     
