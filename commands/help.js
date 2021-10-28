@@ -6,13 +6,13 @@ exports.run = async (client, message, args) =>{
     .setTitle("Help")
     .setFooter("If you need further help join our support server where we are happy to help you!");
 
-    await db.query(`SELECT upload_channel FROM guild WHERE id=${message.guild.id}`)
+    await db.query(`SELECT upload_channel FROM guild WHERE id=${message.guild.id} AND upload_channel IS NOT NULL`)
         .then(rows =>{
             if(rows.length>0){
                 helpEmbed.setDescription(`send a screenshot of your party screen (fullscreened) in the <#${rows[0].upload_channel}> channel.\nThe screenshot must be at least 1920x1080p and it needs to be fullscreen!\n‎`);
             }
             else{
-                //d 
+                helpEmbed.setDescription(`An upload channel has not been set up on this server! Please tell an admin to use the \`+setchannel\` command so the bot can start accepting screenshots to process.\n‎`);
             }
         });
         

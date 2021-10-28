@@ -8,7 +8,12 @@ module.exports = async (client, message) =>{
     if(!message.guild) return;
 
     if(client.uploadChannels.includes(message.channel.id) && message.attachments.size>0){
-        return require("../ocr/scanner.js")(client, message);
+        let debug=false;
+        if(message.content.split(" ")[0]=="debug" && message.author.id==client.config.devId){
+            debug = true;
+        }
+
+        return require("../ocr/scanner.js")(client, message, debug);
     }
 
     const prefix=client.guildPrefixes.get(message.guild.id);
@@ -26,8 +31,14 @@ module.exports = async (client, message) =>{
     
     const cmd = client.commands.get(command);
     if (!cmd) return;
+
+    let debug = false;
+    if(cmd=="debug" && message.author.id==client.config.devId){
+        cmd==args.shift();
+        debug = true;
+    }
     
     if(cmd.config.adminCmd && !(message.member.permissions.has("ADMINISTRATOR") || message.member.id!=client.config.devId)) return message.channel.send("you don't have permissions for this command");
 
-    cmd.run(client, message, args);
+    cmd.run(client, message, args, debug);
 }

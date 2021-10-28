@@ -12,13 +12,14 @@ const visionClient = new vision.ImageAnnotatorClient({
 });
 
 
-module.exports = async (client, message) =>{
+module.exports = async (client, message, debug) =>{
 
     const img = message.attachments.first();
 
     if(img.height<1070 || img.width<1910){
         return message.reply({embeds: [embeds.errorEmbed.setDescription("Image must be at least 1920x1080 pixels")]})
     }
+    
     
     message.channel.sendTyping();
 
@@ -37,7 +38,10 @@ module.exports = async (client, message) =>{
 
         const croppedImg = cropCanvas.toBuffer();
 
-        message.reply({files: [croppedImg]})
+        if(debug){
+            message.reply({files: [croppedImg]});
+        }
+        
         
         
         try{
