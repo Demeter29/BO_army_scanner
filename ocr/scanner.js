@@ -274,7 +274,7 @@ function validateUsername(username){
 }
 
 function validateTroopCount(troopCount){
-    if(isNaN(troopCount) || troopCount<=0 || troopCount>95){
+    if(isNaN(troopCount) || troopCount<=0 || troopCount>1000){
         return false;
     }
 
