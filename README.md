@@ -4,8 +4,8 @@ BO Army Scanner is a discord bot made for Bannerlord Online clans to keep track 
 
 It was first made for House Galendine but I decided to release it for everyone.
 
-## discontinued!
-As of may 2022, I have abandoned the project because the need for the bot dropped when the devs implemented unit trading and it was less relevant what unit each people had. Because both Bannerlord and Bannerlord Online keeps changing their UI, it's very likely that the bot will break in the future.
+## Discontinued!
+As of may 2022, I have abandoned the project because the need for the bot dropped when the devs implemented unit trading and it was less relevant what unit each player had. Because both Bannerlord and Bannerlord Online keeps changing their UI, it's very likely that the bot will break in the future.
 
 ## Features
 
@@ -23,11 +23,9 @@ As of may 2022, I have abandoned the project because the need for the bot droppe
 
 ## Credits
 
-Thanks to [GabagoolOverHere](https://www.google.com) for helping out in some of the logics. 
- 
-Thanks to everyone in House Galendine who helped me test the bot.
-
-And thanks to every clan that decided to try out my bot.
+- Thanks to [GabagoolOverHere](https://github.com/GabagoolOverHere) for helping out in some of the logics. 
+- Thanks to everyone in House Galendine who helped me test the bot.
+- And thanks to every clan that decided to try out my bot.
 
  You can reach out to me if you need any help (Demi#2222)
 
